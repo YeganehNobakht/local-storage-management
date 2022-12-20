@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles/reset.css" />
+    <link rel="stylesheet" href="styles/style.css" />
+    <title>deal with local storage</title>
+  </head>
+  <body>
+    <div class="container">
+      <form action="" id="my-task-form">
+        <input type="text" name="title" id="title" placeholder="Todo title" />
+        <input type="date" name="date" id="date" placeholder="mm/dd/yyyy" />
+        <button type="submit" id="submit">Submit</button>
+      </form>
+
+      <div class="all-todos">
+        <div class="tasks">
+          <h4>Tasks</h4>
+          <div class="task-cards" id="task-cards"></div>
+        </div>
+        <div class="doing">
+          <h4>Doing</h4>
+          <div class="doing-cards" id="doing-cards"></div>
+        </div>
+        <div class="done">
+          <h4>Completed</h4>
+          <div class="done-cards" id="done-cards"></div>
+        </div>
+      </div>
+    </div>
+
+    
+    <script src="src/script.js"></script>
+  </body>
+</html>
