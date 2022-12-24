@@ -33,17 +33,20 @@ function gatherFormData(e) {
     return {
         date: date.value,
         title: title.value,
-        start: new Date().toLocaleDateString("en-US")
+        start: new Date().toLocaleDateString("en-US").replaceAll("/","-")
     }
 }
 function createAcard(task, locationToAdd) {
     const card = `
     <div class="card">
     <h5 class="card-heading">task${task.title}</h5>
-    <p class="start">start${task.start}:</p>
-    <p class="end">end:${task.date}</p>
-    <button type="button" id="revert">➖</button>
-    <button type="button" id="do">✔</button>
+    <p class="start">start: ${task.start}</p>
+    <p class="end">end: ${task.date}</p>
+    <div class="button-wrapper">
+    <button type="button" id="revert"><i class="fa fa-check"></i></button>
+    <button type="button" id="info"><i class="fa fa-info-circle"></i></button>
+    <button type="button" id="do"><i class="fa fa-close"></i></button>
+    </div>
   </div>`
     locationToAdd.insertAdjacentHTML("beforeend", card)
 }
