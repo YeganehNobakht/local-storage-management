@@ -5,6 +5,7 @@ const doneCards = document.getElementById("done-cards");
 const revertButton = document.getElementById("revert");
 const doneButton = document.getElementById("done");
 const infoButton = document.getElementById("do");
+let tooltipElem;
 let alltasksArray;
 let localstrg = JSON.parse(localStorage.getItem("jobArray"));
 if (localstrg) {
@@ -124,7 +125,7 @@ function createAcard(task, locationToAdd) {
             <p class="end">end: ${task.date}</p>
             <div class="button-wrapper">
                 <button type="button" id="revert"><i class="fa fa-close "></i></button>
-                <button type="button" id="info"><i class="fa fa-info-circle"></i></button>
+                <button type="button" class="info" id="info"><i class="fa fa-info-circle"></i></button>
                 <button type="button" id="do"><i class="fa fa-check"></i></button>
             </div>
         </div>`
@@ -165,4 +166,44 @@ function addToDoneCardsFromLocalStorage() {
         doneCards.innerHTML = ""
 }
 
+
+// tooltip for showing task description
+document.onmouseover = function (event) {
+    let target = event.target;
+    if (target.classList.contains('info')) {
+        let taskId = target.closest(".card").id;
+        let task = findTaskById(taskId)
+        let tooltipHtml = task.description;
+        if (!tooltipHtml) return;
+
+        // ...create the tooltip element
+
+        tooltipElem = document.createElement('div');
+        tooltipElem.className = 'tooltip';
+        tooltipElem.innerHTML = tooltipHtml;
+        document.body.append(tooltipElem);
+
+        // position it above the annotated element (top-center)
+        let coords = target.getBoundingClientRect();
+
+        let left = coords.left + (target.offsetWidth - tooltipElem.offsetWidth) / 2;
+        if (left < 0) left = 0; // don't cross the left window edge
+
+        let top = coords.top - tooltipElem.offsetHeight - 5;
+        if (top < 0) { // if crossing the top window edge, show below instead
+            top = coords.top + target.offsetHeight + 5;
+        }
+
+        tooltipElem.style.left = left + 'px';
+        tooltipElem.style.top = top + 'px';
+    };
+
+    document.onmouseout = function (e) {
+
+        if (tooltipElem) {
+            tooltipElem.remove();
+            tooltipElem = null;
+        }
+    }
+};
 
