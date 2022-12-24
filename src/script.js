@@ -1,55 +1,168 @@
 const form = document.getElementById("my-task-form");
-const taskCards = document.getElementById("task-cards")
-const doingCards = document.getElementById("doing-cards")
-const doneCards = document.getElementById("done-cards")
-const alltasksArray = [];
+const taskCards = document.getElementById("task-cards");
+const doingCards = document.getElementById("doing-cards");
+const doneCards = document.getElementById("done-cards");
+const revertButton = document.getElementById("revert");
+const doneButton = document.getElementById("done");
+const infoButton = document.getElementById("do");
+let alltasksArray;
+let localstrg = JSON.parse(localStorage.getItem("jobArray"));
+if (localstrg) {
+    alltasksArray = localstrg;
+} else {
+    alltasksArray = []
+}
 
-
+if (localStorage.getItem("jobArray")) {
+    addToTaskCardsFromLocalStorage();
+    addToDoingCardsFromLocalStorage();
+    addToDoneCardsFromLocalStorage();
+}
 form.onsubmit = (e) => {
     e.preventDefault();
     addNewTask(e)
 }
+// infoButton.addEventListener("click", (e) => {
+//     const id = e.target.closest('.card').id
+//     const taskArray = findTaskById(id)
+//     .
+// })
+
+doneCards.addEventListener("click", (e) => manageTaskWithDoAdnRevertButton(e))
+
+doingCards.addEventListener("click", (e) => manageTaskWithDoAdnRevertButton(e))
+
+taskCards.addEventListener("click", (e) => { manageTaskWithDoAdnRevertButton(e) })
+
+function manageTaskWithDoAdnRevertButton(e) {
+    const target = e.target.closest("button")
+    if (target) {
+        const id = target.closest('.card').id
+        const task = findTaskById(id)
+        if (target.id == "revert") {
+            setTaskStatusForRevertButton(task);
+        } else if (target.id == "do") {
+            setTaskStatusForDoingButton(task);
+        }
+
+        addToTaskCardsFromLocalStorage();
+        addToDoingCardsFromLocalStorage();
+        addToDoneCardsFromLocalStorage();
+    }
+}
+
+function findTaskById(id) {
+    return alltasksArray.filter(task => task.id == id)[0]
+}
+
+function setTaskStatusForRevertButton(task) {
+    if (task.status == "new") {
+        deleteFromLocalStorage(task)
+    } else if (task.status == "doing") {
+        task.status = "new";
+        addUpdatedTasksArrayToLocalStorage(alltasksArray)
+    } else if (task.status == "done") {
+        task.status = "doing";
+        addUpdatedTasksArrayToLocalStorage(alltasksArray)
+    }
+}
+
+function setTaskStatusForDoingButton(task) {
+    if (task.status == "new") {
+        task.status = "doing"
+        addUpdatedTasksArrayToLocalStorage(alltasksArray)
+    } else if (task.status == "doing") {
+        task.status = "done"
+        addUpdatedTasksArrayToLocalStorage(alltasksArray)
+    } else if (task.status == "done") {
+        deleteFromLocalStorage(task)
+    }
+}
+
+function deleteFromLocalStorage(task) {
+    alltasksArray.splice(alltasksArray.indexOf(task), 1)
+    addUpdatedTasksArrayToLocalStorage(alltasksArray)
+}
 
 function addNewTask(e) {
     const task = gatherFormData(e)
-    const newTask = { ...task, id: generateId, status: "new" }
+    const newTask = { ...task, id: generateId(), status: "new" }
+    console.log("newTask", newTask);
     createAcard(newTask, taskCards)
     //   update local storage
-    addUpdatedTasksArrayToLocalStorage(alltasksArray.push(newTask))
+    alltasksArray.push(newTask);
+    addUpdatedTasksArrayToLocalStorage(alltasksArray)
 
 }
 function generateId() {
-    if (localStorage.getItem("id")) {
+    let id = JSON.parse(localStorage.getItem("id"))
+    console.log("id", id);
+    if (!id) {
+        console.log('set one');
         localStorage.setItem("id", 1)
         return 1;
     } else {
-        localStorage.setItem("id") + 1
+        localStorage.setItem("id", ++id)
         return localStorage.getItem("id")
     }
 }
 
 function gatherFormData(e) {
-    const { title, date } = e.target
+    const { title, description, date } = e.target
     return {
         date: date.value,
         title: title.value,
-        start: new Date().toLocaleDateString("en-US").replaceAll("/","-")
+        description: description.value,
+        start: new Date().toLocaleDateString("en-US").replaceAll("/", "-")
     }
 }
 function createAcard(task, locationToAdd) {
     const card = `
-    <div class="card">
-    <h5 class="card-heading">task${task.title}</h5>
-    <p class="start">start: ${task.start}</p>
-    <p class="end">end: ${task.date}</p>
-    <div class="button-wrapper">
-    <button type="button" id="revert"><i class="fa fa-check"></i></button>
-    <button type="button" id="info"><i class="fa fa-info-circle"></i></button>
-    <button type="button" id="do"><i class="fa fa-close"></i></button>
-    </div>
-  </div>`
+        <div class="card" id="${task.id}">
+            <h5 class="card-heading">task${task.title}</h5>
+            <p class="start">start: ${task.start}</p>
+            <p class="end">end: ${task.date}</p>
+            <div class="button-wrapper">
+                <button type="button" id="revert"><i class="fa fa-close "></i></button>
+                <button type="button" id="info"><i class="fa fa-info-circle"></i></button>
+                <button type="button" id="do"><i class="fa fa-check"></i></button>
+            </div>
+        </div>`
     locationToAdd.insertAdjacentHTML("beforeend", card)
+
 }
 function addUpdatedTasksArrayToLocalStorage(alltasksArray) {
-    localStorage.setItem("tasks", alltasksArray)
+    localStorage.setItem("jobArray", JSON.stringify(alltasksArray))
 }
+function addToTaskCardsFromLocalStorage() {
+    const localstrg = JSON.parse(localStorage.getItem("jobArray"))
+    console.log(localstrg.length);
+    if (localstrg.length != 0) {
+        taskCards.innerHTML = "";
+        localstrg.filter(task => task.status == "new").forEach(task => createAcard(task, taskCards))
+    } else {
+        taskCards.innerHTML = "";
+    }
+}
+
+function addToDoingCardsFromLocalStorage() {
+    const localstrg = JSON.parse(localStorage.getItem("jobArray"))
+    if (localstrg.length != 0) {
+        doingCards.innerHTML = ""
+        localstrg.filter(task => task.status == "doing").forEach(task => createAcard(task, doingCards))
+    }
+    else
+        doingCards.innerHTML = ""
+}
+
+function addToDoneCardsFromLocalStorage() {
+    const localstrg = JSON.parse(localStorage.getItem("jobArray"))
+    if (localstrg.length != 0) {
+        doneCards.innerHTML = ""
+        localstrg.filter(task => task.status == "done").forEach(task => createAcard(task, doneCards))
+    }
+    else
+        doneCards.innerHTML = ""
+}
+
+
